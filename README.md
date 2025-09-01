@@ -76,6 +76,8 @@ The project follows a **serverless, service-based architecture** where each comp
 
 <img src="Screenshots/1-Diagram.png" width="750">
 
+<img src="Screenshots/1.1-frontend-ui.png" width="750">
+
 This architecture showcases both **CORS and No-CORS patterns**, while following AWS best practices like **OAC**, **stage isolation**, and **Lambda aliasing** for controlled deployments.
 
 ## <span style="color:#1E90FF">3. Frontend (React + Vite)</span>
