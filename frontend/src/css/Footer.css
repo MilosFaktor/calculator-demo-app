@@ -1,0 +1,35 @@
+.home-footer {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: #aaa;
+  border-top: 1px solid #333;
+  padding-top: 1.2rem;
+}
+
+.home-footer-links {
+  margin-top: 0.7rem;
+}
+
+.footer-link {
+  color: #ffd700;
+  text-decoration: none;
+  margin: 0 0.5rem;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #fffbe6;
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .home-footer {
+    font-size: 0.88rem;
+    padding-top: 0.8rem;
+  }
+  .footer-link {
+    margin: 0 0.3rem;
+    font-size: 1rem;
+  }
+}
