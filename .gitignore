@@ -21,3 +21,4 @@ frontend/.env
 *.sw?
 
 ignored/
+frontend-dev/
