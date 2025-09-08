@@ -1,6 +1,7 @@
 # Calculator Demo App (Serverless on AWS)
 
 🔗 **Live Demo:** [https://calculator-demo-app.cloudnecessities.com/](https://calculator-demo-app.cloudnecessities.com/)  
+*version 1.0.0* - Live demo version may change over time.
 
 ---
 
