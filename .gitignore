@@ -7,7 +7,7 @@ frontend/dist
 frontend/dist-ssr'
 
 frontend/*.local
-frontend/.env
+frontend/.env**
 
 # Editor directories and files
 .vscode/*
@@ -21,4 +21,3 @@ frontend/.env
 *.sw?
 
 ignored/
-frontend-dev/

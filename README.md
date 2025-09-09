@@ -1,10 +1,15 @@
 # Calculator Demo App (Serverless on AWS)
 
 🔗 **Live Demo:** [https://calculator-demo-app.cloudnecessities.com/](https://calculator-demo-app.cloudnecessities.com/)  
-*version 1.0.0* - Live demo version may change over time.
+*version 2.0.0* – Now with **Cognito Authentication & Authorization (NEW Section 9)** 🎉  
 
 ---
 
+## Changelog
+- **v2.0.0** — Added **Authentication (Amazon Cognito)** with Hosted UI, JWT validation via API Gateway authorizers, and documented prod/dev environments. Updated architecture diagram.
+- **v1.0.0** — Initial release: React + Vite frontend, API Gateway + Lambda backend, CloudFront (CORS & No-CORS patterns), OAC, stages & aliases.
+
+---
 # Table of Contents
 
 1. [Project Overview](#1-project-overview)  
@@ -15,15 +20,21 @@
 6. [API Gateway Stages & Stage Variables](#6-api-gateway-stages--stage-variables)  
 7. [CloudFront Setup (Origins, Behaviors, OAC)](#7-cloudfront-setup-origins-behaviors-oac)  
 8. [Environment Variables & Aliases](#8-environment-variables--aliases)  
-9. [Testing & Validation (Postman, Browser, Mobile)](#9-testing--validation-postman-browser-mobile)  
-10. [Troubleshooting & Issues Faced](#10-troubleshooting--issues-faced)  
-11. [Key Learnings](#11-key-learnings)  
+9. [Authentication (Amazon Cognito)](#9-authentication-amazon-cognito) 🚀 **NEW in v2.0.0**
+10. [Testing & Validation (Postman, Browser, Mobile)](#10-testing--validation-postman-browser-mobile)  
+11. [Troubleshooting & Issues Faced](#11-troubleshooting--issues-faced)  
+12. [Key Learnings](#12-key-learnings)
+
 
 ---
 
 ## <span style="color:#1E90FF">1. Project Overview</span>
 
 This project demonstrates how to build a **full end-to-end serverless application** on AWS by combining a **React frontend (Vite)** with an **API Gateway + Lambda backend**.  
+
+Two live environments are maintained:
+  - **Production** → stable, public-facing site, only tested code is deployed
+  - **Development** → live test site, used for experimenting and rehearsals against prod APIs
 
 The main use case is a **Calculator Demo App** where users can perform basic arithmetic operations (Add, Subtract, Multiply, Divide) directly from a browser.  
 
@@ -51,6 +62,12 @@ The project follows a **serverless, service-based architecture** where each comp
   - Distributed globally via **CloudFront**.  
   - Uses **React Router** for navigation and fetches data from APIs.  
 
+- **Authentication (Amazon Cognito)**  
+  - Two Cognito User Pools (prod and dev).  
+  - Cognito Hosted UI for authentication.  
+  - JWT validation by API Gateway authorizers.  
+  - Separation of prod and dev domains.  
+
 - **Backend (AWS Lambda + API Gateway)**  
   - A single **Lambda function** implements calculator logic (basic arithmetic).  
   - Exposed via **API Gateway** with two integration patterns:  
@@ -75,9 +92,11 @@ The project follows a **serverless, service-based architecture** where each comp
 
 ### Diagram
 
-<img src="Screenshots/1-Diagram.png" width="750">
+<img src="Screenshots/v2/1-Diagram.png" width="750">
 
-<img src="Screenshots/1.1-frontend-ui.png" width="750">
+<img src="Screenshots/v2/1.2-frontend-ui-home.png" width="750">
+
+<img src="Screenshots/v2/1.1-frontend-ui-calculator.png" width="750">
 
 This architecture showcases both **CORS and No-CORS patterns**, while following AWS best practices like **OAC**, **stage isolation**, and **Lambda aliasing** for controlled deployments.
 
@@ -121,7 +140,7 @@ It provides a simple **Calculator UI** with two integration options:
   aws cloudfront create-invalidation --distribution-id <id> --paths "/*"
   ```
 
-<img src="Screenshots/3.1-deployment-to-S3-origin.png" width="750">
+<img src="Screenshots/v1/3.1-deployment-to-S3-origin.png" width="750">
 
 ### CORS vs No-CORS in Frontend
 - **CORS API Call**
@@ -185,7 +204,7 @@ The calculator logic is fully serverless, lightweight, and stateless.
   - **CORS API** → Custom domain (`api.example.com`) with CORS enabled.  
   - **No-CORS API** → Direct stage invocation via CloudFront proxy (`/api/v1/basic-calc`).  
 
-  <img src="Screenshots/4.1-API-GateWay.png" width="750">
+  <img src="Screenshots/v1/4.1-API-GateWay.png" width="750">
 
 **Methods:**
 - `POST` → invokes Lambda, processes calculator logic.  
@@ -215,15 +234,15 @@ This project demonstrates **two ways** of connecting a React frontend to an API 
 - `Access-Control-Allow-Headers`  
 - `Access-Control-Allow-Methods`  
 
-<img src="Screenshots/4.3-CORS-resources.png" width="750">
+<img src="Screenshots/v1/4.3-CORS-resources.png" width="750">
 
 **Custom domain set up**
 
-<img src="Screenshots/4.5-API-Gateway-custom-domain.png" width="750">
+<img src="Screenshots/v1/4.5-API-Gateway-custom-domain.png" width="750">
 
 **Route53**
 
-<img src="Screenshots/4.6-route53.png" width="750">
+<img src="Screenshots/v1/4.6-route53.png" width="750">
 
 **Frontend code:**
 ```javascript
@@ -251,7 +270,7 @@ body: JSON.stringify({ a, b, operation }),
 - CloudFront has a behavior (`/api/*`) that proxies requests to the API Gateway stage.  
 - From the browser’s perspective, both website and API are the **same origin** → no CORS checks.
 
-<img src="Screenshots/4.4-NO-CORS-resources.png" width="750">
+<img src="Screenshots/v1/4.4-NO-CORS-resources.png" width="750">
 
 **Frontend code:**
 ```javascript
@@ -297,7 +316,7 @@ Three stages were created:
 
 Each stage can point to different **Lambda aliases** (`DEV`, `TEST`, `PROD`) to isolate deployments.  
 
-<img src="Screenshots/4.2-Api-Gateway-stages.png" width="750">
+<img src="Screenshots/v1/4.2-Api-Gateway-stages.png" width="750">
 
 ---
 
@@ -327,11 +346,11 @@ arn:aws:lambda:eu-north-1:<account-id>:function:basic-calc:${stageVariables.calc
    - Stage variable → `TEST`  
    - Canary deployments tested here with Lambda + CodeDeploy  
 
-   <img src="Screenshots/2.1-CodeDeploy-deployment-setting-yaml.png" width="750">
+   <img src="Screenshots/v1/2.1-CodeDeploy-deployment-setting-yaml.png" width="750">
 
-   <img src="Screenshots/2.2-CodeDeploy-deployment.png" width="750">
+   <img src="Screenshots/v1/2.2-CodeDeploy-deployment.png" width="750">
 
-   <img src="Screenshots/2.3-lambda-traffic-shitfting-through-CodeDeploy.png" width="750">
+   <img src="Screenshots/v1/2.3-lambda-traffic-shitfting-through-CodeDeploy.png" width="750">
 
 3. **Production**  
    - Stable version deployed to `prod`  
@@ -354,7 +373,7 @@ CloudFront was used to serve both the **React frontend** and the **API Gateway b
 
 Origins
 
-<img src="Screenshots/5.1-CloudFront-origins.png" width="750">
+<img src="Screenshots/v1/5.1-CloudFront-origins.png" width="750">
 
 ---
 
@@ -366,15 +385,15 @@ Origins
 
     Origin
 
-    <img src="Screenshots/5.2-Cloudfront-s3-origin.png" width="750">
+    <img src="Screenshots/v1/5.2-Cloudfront-s3-origin.png" width="750">
 
     OAC
 
-   <img src="Screenshots/3.3-S3-bucker-OAC-policy.png" width="750">
+   <img src="Screenshots/v1/3.3-S3-bucker-OAC-policy.png" width="750">
 
     S3 Bucket
 
-   <img src="Screenshots/3.2-S3-bucket.png" width="750">
+   <img src="Screenshots/v1/3.2-S3-bucket.png" width="750">
 
 2. **API Gateway (Backend, No-CORS)**  
    - Configured as a **custom origin** pointing to the **regional API Gateway domain**  
@@ -384,7 +403,7 @@ Origins
 
    Origin
 
-   <img src="Screenshots/5.3-CloudFront-NOCORS-API.png" width="750">
+   <img src="Screenshots/v1/5.3-CloudFront-NOCORS-API.png" width="750">
 
 ---
 
@@ -403,11 +422,11 @@ Origins
 
 Behaviors
 
-<img src="Screenshots/5.4-Cloudfront-behaviors.png" width="750">
+<img src="Screenshots/v1/5.4-Cloudfront-behaviors.png" width="750">
 
 Error pages
 
-<img src="Screenshots/5.5-CloudFront-error-pages.png" width="750">
+<img src="Screenshots/v1/5.5-CloudFront-error-pages.png" width="750">
 
 ---
 
@@ -421,11 +440,11 @@ Error pages
 
   Cors stages
 
-  <img src="Screenshots/4.2-Api-Gateway-stages.png" width="750">
+  <img src="Screenshots/v1/4.2-Api-Gateway-stages.png" width="750">
 
   Custom domain set up
 
-  <img src="Screenshots/4.5-API-Gateway-custom-domain.png" width="750">
+  <img src="Screenshots/v1/4.5-API-Gateway-custom-domain.png" width="750">
 
 - **No-CORS API Calls**  
   - Frontend calls **relative path**  
@@ -435,7 +454,7 @@ Error pages
   - CloudFront proxies request to API Gateway  
   - No CORS headers required (appears same-origin)  
 
-  <img src="Screenshots/5.6-api-gateway-nocors-stages.png" width="750">
+  <img src="Screenshots/v1/5.6-api-gateway-nocors-stages.png" width="750">
 
 ---
 
@@ -473,7 +492,7 @@ Lambda versions and aliases separate deployments per stage:
 - `TEST` Alias → points to Lambda version Y (tested code)  
 - `PROD` Alias → points to Lambda version Z (production code)  
 
-<img src="Screenshots/2.3-lambda-traffic-shitfting-through-CodeDeploy.png" width="750">
+<img src="Screenshots/v1/2.3-lambda-traffic-shitfting-through-CodeDeploy.png" width="750">
 
 **API Gateway stage variables reference the correct alias:**
 ```json
@@ -491,7 +510,120 @@ This ensures that the same API resource (`/v1/basic-calc`) can be mapped to diff
 - **Safety** → canary deployments and rollbacks possible by shifting traffic between aliases  
 - **Simplicity** → CORS uses env variable for absolute URL, No-CORS uses relative fetch → both supported in one codebase  
 
-## <span style="color:#1E90FF">9. Testing & Validation (Postman, Browser, Mobile)</span>
+## <span style="color:#1E90FF">9. Authentication (Amazon Cognito)</span>
+
+To secure the Calculator Demo App, **Amazon Cognito User Pools** were integrated for both **production** and **development** environments.  
+All API requests now require a valid **JWT ID token**, obtained after authenticating via the Cognito **Hosted UI**.
+
+---
+
+### Cognito Setup
+- **User Pools**
+  - `dev-user-pool` → used by development site
+  - `prod-user-pool` → used by production site
+
+  <img src="Screenshots/v2/9.1-prod-userpool.png" width="750">
+
+- **App Clients**
+  - Dev: `dev-spa`
+  - Prod: `prod-spa`
+
+  <img src="Screenshots/v2/9.2-prod-appclient.png" width="750">
+
+- **Hosted UI Custom Domains (Route 53 + Cognito association)**
+  - Dev: `https://signin.dev.calculator-demo-app.cloudnecessities.com`
+  - Prod: `https://signin.calculator-demo-app.cloudnecessities.com`
+
+  <img src="Screenshots/v2/9.3-custom-domain-prod.png" width="750">
+
+  <img src="Screenshots/v2/9.4-DNS.png" width="750">
+
+  <img src="Screenshots/v2/9.6-sign-in-ui.png" width="750">
+
+- **OAuth**
+  - Flow: **Authorization Code with PKCE**
+  - Scopes: `openid email profile`
+
+- **Callback & Logout URLs**
+  - Dev site  
+    - Callback: `https://dev.calculator-demo-app.cloudnecessities.com/callback`  
+    - Logout: `https://dev.calculator-demo-app.cloudnecessities.com/`
+  - Prod site  
+    - Callback: `https://calculator-demo-app.cloudnecessities.com/callback`  
+    - Logout: `https://calculator-demo-app.cloudnecessities.com/`
+
+---
+
+### API Gateway + Lambda Integration
+- **API Gateway Authorizers**
+  - `dev-cognito-authorizer` (linked to dev pool)  
+  - `prod-cognito-authorizer` (linked to prod pool)
+
+  <img src="Screenshots/v2/9.5-API-Authorizers.png" width="750">
+
+---
+
+### Lambda Security & CORS
+- Each Lambda enforces a strict **CORS allowlist** using environment variables:  
+
+```python
+import os, json
+
+ALLOWED_ORIGINS = [
+    os.environ['ORIGIN_V1_BASIC_CALCULATOR_PROD'],
+    os.environ['ORIGIN_V1_BASIC_CALCULATOR_DEV'],
+    os.environ['ORIGIN_V1_BASIC_CALCULATOR_DEV_LOCAL_HOST']
+]
+
+def lambda_handler(event, context):
+    origin = event.get("headers", {}).get("origin")
+    cors_origin = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
+
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": cors_origin,
+            "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+            "Access-Control-Allow-Headers": "Authorization,Content-Type",
+        },
+        "body": json.dumps({"ok": True})
+    }
+```
+Blocks unauthenticated calls (e.g., Postman).  
+
+Only requests with valid **Origin** + `Authorization: Bearer <ID_TOKEN>` are accepted.  
+
+---
+
+## Frontend Environment Management (IMPROVED in v2.0.0)
+
+### Env Files 
+- `.env.dev` → dev site build (uses dev pool/API)  
+- `.env.prod` → prod site build (uses prod pool/API)  
+
+---
+
+## Deployment Workflow
+
+### Dev Build
+```bash
+npm run build -- --mode dev
+aws s3 sync ./dist s3://site.bucket/dev --delete
+aws cloudfront list-distributions --query "DistributionList.Items[*].[Id,DomainName,Comment]" --output table
+aws cloudfront create-invalidation --distribution-id <DEV_CF_ID> --paths "/*"
+```
+### Prod Build
+```bash
+npm run build -- --mode prod
+aws s3 sync ./dist s3://site.bucket/prod --delete
+aws cloudfront list-distributions --query "DistributionList.Items[*].[Id,DomainName,Comment]" --output table
+aws cloudfront create-invalidation --distribution-id <PROD_CF_ID> --paths "/*"
+```
+
+
+
+
+## <span style="color:#1E90FF">10. Testing & Validation (Postman, Browser, Mobile)</span>
 
 Throughout the build, I validated the setup at multiple levels to ensure correctness and stability.  
 
@@ -559,7 +691,7 @@ All three layers (**frontend, backend, delivery**) tested and confirmed.
 - **Fix:** Point CloudFront origin to the new **regional `execute-api` URL** (created a new API without a custom domain for No-CORS). Keep the **custom domain only for the CORS path**.  
 
 
-## <span style="color:#1E90FF">10. Troubleshooting & Issues Faced</span>
+## <span style="color:#1E90FF">11. Troubleshooting & Issues Faced</span>
 
 This project was not a straight path — I hit multiple issues along the way and fixed them one by one.  
 Documenting them here shows the **real-world debugging process**.  
@@ -634,61 +766,64 @@ Every issue was solved by carefully checking:
 This hands-on debugging reinforced **real-world cloud problem-solving**.  
 
 
-## <span style="color:#1E90FF">11. Key Learnings</span>
+## <span style="color:#1E90FF">12. Key Learnings</span>
 
-This project was more than just building a calculator — it was about exploring **how real-world cloud applications are wired together**.  
-Here are the main lessons I took away:
+This project was more than just building a calculator — it was about exploring **how real-world cloud applications are wired together** and securing them end-to-end.
 
 ---
 
 ### 🟢 React + Cloud Integration
-- Learned how to **connect a React frontend** with AWS APIs.  
-- Understood why React as a **Single Page App (SPA)** requires special handling in CloudFront (error pages → `index.html`).  
-- Gained hands-on practice with **routing, API calls, and responsive UI fixes**.  
+- Connecting a **React SPA** to AWS services requires careful handling of **routing** and **static hosting** (CloudFront error pages → `index.html`).
+- Split frontend calls to demonstrate **CORS** vs **No-CORS** from the same UI without changing backend logic.
+
+---
+
+### 🟢 Authentication & Authorization (Cognito)
+- **Cognito Hosted UI + Authorization Code (PKCE)** is a clean way to add login to SPAs without storing secrets.
+- Keep **callback/logout URLs** consistent everywhere (Cognito app client, README, frontend).
+- **API Gateway Cognito Authorizers** offload JWT validation before Lambda runs.
+- Enforce a **strict CORS origin allowlist** in Lambda to block tools like Postman and only trust your frontend domains.
+- Prefer storing tokens in **sessionStorage** (or memory) for SPAs; be explicit about your storage choice and tradeoffs.
+
+---
+
+### 🟢 Environments & Deployment Safety
+- Maintain **two live environments**:
+  - **Production** → stable, public-facing, **only tested code**.
+  - **Development** → safe place to experiment and do **prod dress rehearsals**.
+- A **dev UI with prod Cognito/API** (rehearsal) validates auth flows and domains without touching the prod site.
+- Centralize general env/build steps (Section 8); scope **auth-specific** envs/deploy to Section 9 to avoid confusion.
 
 ---
 
 ### 🟢 API Gateway Patterns
-- Understood the difference between **CORS vs No-CORS** setups:  
-  - **CORS** → Direct API calls, requires backend to return CORS headers.  
-  - **No-CORS** → Proxy through CloudFront, backend doesn’t need CORS headers.  
-- Learned when to use **custom domains** vs direct `execute-api` endpoints.  
-- Practiced **stage variables** for separating `dev`, `test`, and `prod`.  
+- **CORS** → direct API custom domain; requires CORS headers and OPTIONS handling.
+- **No-CORS** → CloudFront `/api/*` → **regional `execute-api`** origin using **AllViewerExceptHostHeader**; no CORS headers needed.
+- Don’t point CloudFront at an **API custom domain** for No-CORS; use the **regional** domain to avoid 405s and header issues.
 
 ---
 
 ### 🟢 CloudFront Behavior
-- Learned to set up **multiple origins** (S3 for frontend, API Gateway for backend).  
-- Configured **behaviors** with path-based routing (`/api/*`).  
-- Realized the importance of **OAC (Origin Access Control)** for securing private S3 buckets.  
-- Practiced invalidations to ensure updated content delivery.  
+- Multiple origins (S3 + API Gateway) with path-based routing is powerful; apply **SPA error page redirects at the distribution level**.
+- **OAC** keeps the S3 bucket private and enforces CloudFront as the only entry point.
 
 ---
 
-### 🟢 Lambda & Deployment
-- Practiced **Lambda response formatting** for proper JSON outputs.  
-- Experimented with **manual traffic shifting** and **CodeDeploy canaries** for safer rollouts.  
-- Learned how **Lambda aliases** provide flexibility between versions (`DEV`, `TEST`, `PROD`).  
+### 🟢 Lambda & Release Management
+- **Lambda aliases** + **API Gateway stage variables** cleanly separate `dev/test/prod`.
+- Canary strategies (CodeDeploy) and quick rollbacks via alias re-pointing reduce risk.
+- Return well-formed JSON and explicit headers; be intentional about **no caching** for API paths.
 
 ---
 
 ### 🟢 Debugging & Troubleshooting
-- Solved **403/404/405 errors**, tracing them to CloudFront behaviors and CORS misconfigurations.  
-- Learned how misconfigured **error pages** can break APIs if applied globally.  
-- Fixed **mobile responsiveness** with CSS tweaks.  
-- Understood the importance of testing across **Postman, desktop browser, and mobile**.  
+- 403/404/405 issues usually trace back to **behaviors, headers, or error-page scope**.
+- When something mysterious breaks, validate each layer independently: **frontend → CloudFront → API Gateway → Lambda**.
 
 ---
 
-### 🟢 General Takeaways
-- **Architecture is easier than building** → design looks simple until you implement (headers, caching, routes matter).  
-- **Incremental testing is key** → validate each piece step by step.  
-- Cloud projects are not “deploy and forget” — they require **iteration, debugging, and validation**.  
-- This project tied together **frontend + backend + infrastructure** into one flow.  
+✅ **End Result:** A working, secure, end-to-end demo proving integration of **React, CloudFront (OAC), API Gateway, Lambda, and Cognito**—while handling real-world challenges like **CORS, JWT validation, multi-env deployments, caching, routing, and security**.
 
----
-
-✅ **End Result:** A working, end-to-end demo proving I can integrate **React frontend, API Gateway, Lambda, and CloudFront** while handling real-world challenges like **CORS, caching, routing, and security**.  
 
 ## Hashtags
-#AWS #Serverless #CloudComputing #Lambda #APIGateway #CloudFront #S3 #React #Vite #DevOps #SolutionArchitecture
+#AWS #Serverless #CloudComputing #Lambda #APIGateway #Cognito #CloudFront #S3 #React #Vite #DevOps #SolutionArchitecture

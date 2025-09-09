@@ -9,7 +9,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">Calculator app</Link>
+        <Link to="/">Calculator app: v2.0.0</Link>
       </div>
       <button
         className="navbar-toggle"
@@ -34,6 +34,13 @@ function Navbar() {
           onClick={() => setMenuOpen(false)}
         >
           Calculator
+        </Link>
+        <Link
+          to="/auth"
+          className={`nav-link${location.pathname === "/auth" ? " active" : ""}`}
+          onClick={() => setMenuOpen(false)}
+        >
+          AuthPanel
         </Link>
       </div>
     </nav>
