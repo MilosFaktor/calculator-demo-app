@@ -1,15 +1,75 @@
 import json
 import os
 
-ORIGIN_V1_BASIC_CALCULATOR = os.environ['ORIGIN_V1_BASIC_CALCULATOR']
+ORIGIN_V1_BASIC_CALCULATOR_PROD = os.environ['ORIGIN_V1_BASIC_CALCULATOR_PROD']
+ORIGIN_V1_BASIC_CALCULATOR_DEV = os.environ['ORIGIN_V1_BASIC_CALCULATOR_DEV']
+ORIGIN_V1_BASIC_CALCULATOR_DEV_LOCAL_HOST = os.environ['ORIGIN_V1_BASIC_CALCULATOR_DEV_LOCAL_HOST']
+
+
+ALLOWED_ORIGINS = [
+    ORIGIN_V1_BASIC_CALCULATOR_PROD,
+    ORIGIN_V1_BASIC_CALCULATOR_DEV,
+    ORIGIN_V1_BASIC_CALCULATOR_DEV_LOCAL_HOST
+]
 
 def lambda_handler(event, context):
+    print("EVENT:", json.dumps(event))  # pretty 
+
+    origin = event.get("headers", {}).get("origin")
+    if origin in ALLOWED_ORIGINS:
+        cors_origin = origin
+    else:
+        cors_origin = ALLOWED_ORIGINS[0]  # default to first allowed
+
+     # Allow OPTIONS requests (CORS preflight) to pass through
+    if event.get('httpMethod') == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': cors_origin,
+                'Access-Control-Allow-Methods': 'POST,OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'
+            },
+            'body': json.dumps({'message': 'CORS preflight'})
+        }
+    
+    headers = event.get('headers', {})
+    
+    # 1. Check User-Agent (block API tools)
+    user_agent = headers.get('User-Agent', '').lower()
+    blocked_agents = ['postman', 'insomnia', 'curl', 'wget', 'python-requests', 'httpie']
+    
+    if any(agent in user_agent for agent in blocked_agents):
+        return {
+            'statusCode': 403,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': cors_origin,
+            },
+            'body': json.dumps({'error': 'Browser access only 1'})
+        }
+    
+    # 2. Require browser-like User-Agent
+    browser_indicators = ['mozilla', 'chrome', 'safari', 'firefox', 'edge']
+    if not any(browser in user_agent for browser in browser_indicators):
+        return {
+            'statusCode': 403,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': cors_origin,
+            },
+            'body': json.dumps({'error': 'Browser access only 2'})
+        }
+
     headers = {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': ORIGIN_V1_BASIC_CALCULATOR,
+        'Access-Control-Allow-Origin': cors_origin,
         'Access-Control-Allow-Methods': 'POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token, X-Origin-Verify'
     }
+
+    
     try:
         # Determine HTTP method
         http_method = event.get('httpMethod', 'GET').upper()

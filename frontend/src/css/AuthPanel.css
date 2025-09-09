@@ -1,0 +1,117 @@
+.authpanel-container {
+  max-width: auto;
+  margin: 2rem auto;
+  background: #222;
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.authpanel-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.2rem;
+  color: #3498db;
+  letter-spacing: 1px;
+}
+
+.authpanel-h1 {
+  font-size: 1.15rem;
+  color: #ffd700;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.authpanel-text {
+  background: #292929;
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  line-height: 1.6;
+}
+
+.authpanel-user {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #3498db;
+}
+
+.authpanel-tokens {
+  margin-bottom: 1.5rem;
+  text-align: left;
+  word-break: break-all;
+}
+
+.authpanel-tokens code {
+  background: #333;
+  color: #ffd700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.authpanel-btn {
+  background: #ffd700;
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.authpanel-btn:hover {
+  background: #fffbe6;
+}
+
+.authpanel-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.authpanel-loading,
+.authpanel-error {
+  color: #ffd700;
+  font-size: 1.1rem;
+  margin: 2rem 0;
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 600px) {
+  .authpanel-container {
+    max-width: 100%;
+    padding: 1rem 0.5rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .authpanel-title {
+    font-size: 1.2rem;
+  }
+  .authpanel-h1 {
+    font-size: 1rem;
+  }
+  .authpanel-text {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.5rem;
+    display: block;
+  }
+  .authpanel-btn {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+  .authpanel-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
